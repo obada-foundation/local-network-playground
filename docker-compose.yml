@@ -1,0 +1,103 @@
+version: "3.7"
+
+services:
+  node:
+    image: obada/ethermint
+    container_name: node
+    restart: always
+    volumes:
+      - ./nodes/node/ethermintd:/home/ethermint/.ethermintd:Z
+    command: ethermintd start --trace --keyring-backend test
+    ports:
+     - "26657:26657"
+     - "8545:8545"
+     - "8546:8546"
+     - "8125:8125"
+    networks:
+      - obadanet
+
+  testnet-init:
+    image: obada/ethermint
+    container_name: testnet-init
+    volumes:
+      - ./testnet-init.sh:/home/ethermint/testnet-init.sh
+      - ./nodes:/home/ethermint/nodes
+    command: "./testnet-init.sh"
+    
+  tradeloop-node:
+    image: obada/ethermint
+    container_name: tradeloop-node
+    environment:
+      - ID=0
+    volumes:
+      - ./nodes/node0/ethermintd:/home/ethermint/.ethermintd:Z
+    command: ethermintd start --keyring-backend test
+    networks:
+      - obadanet
+      
+  obs-node:
+    image: obada/ethermint
+    container_name: obs-node
+    environment:
+      - ID=1
+    volumes:
+      - ./nodes/node1/ethermintd:/home/ethermint/.ethermintd:Z
+    command: ethermintd start --trace --keyring-backend test
+    networks:
+      - obadanet
+
+  usody-node:
+    image: obada/ethermint
+    container_name: usody-node
+    environment:
+      - ID=2
+    volumes:
+      - ./nodes/node2/ethermintd:/home/ethermint/.ethermintd:Z
+    command: ethermintd start --trace --keyring-backend test
+    networks:
+      - obadanet
+
+  ascidi-node:
+    image: obada/ethermint
+    container_name: ascidi-node
+    environment:
+      - ID=3
+    volumes:
+      - ./nodes/node3/ethermintd:/home/ethermint/.ethermintd:Z
+    command: ethermintd start --trace --keyring-backend test
+    networks:
+      - obadanet
+
+  blockexplorer:
+    image: obada/blockscout
+    container_name: blockexplorer
+    networks:
+      - frontend
+      - blockscout
+      - obadanet
+
+  blockexplorer-migrations:
+    image: obada/blockscout
+    environment:
+      - POSTGRES_USER="postgress"
+      - POSTGRES_DATABASE=blockscout
+    command: "mix do ecto.create, ecto.migrate"
+    networks:
+      - blockscout
+
+  postgres:
+    image: postgres:12.5
+    container_name: postgress
+    environment:
+      - POSTGRES_PASSWORD=obadarocks
+      - POSTGRES_USER=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust 
+    networks:
+      - blockscout
+      
+networks:
+  obadanet:
+  blockscout:
+  frontend:
+  
+    
