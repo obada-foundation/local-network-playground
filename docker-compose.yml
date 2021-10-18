@@ -1,6 +1,21 @@
 version: "3.7"
 
 services:
+  ipfs:
+    image: ipfs/go-ipfs:latest
+    container_name: ipfs
+    restart: always
+    volumes:
+      - ./ipfs/export:/export
+      - ./ipfs/data:/data/ipfs
+    ports:
+      - "4002:4001"
+      - "4003:4001/udp" 
+      - "8084:8080"
+      - "5002:5001"
+    networks:
+      - applications
+
   node:
     image: obada/ethermint
     container_name: node
@@ -15,6 +30,7 @@ services:
      - "8125:8125"
     networks:
       - obadanet
+      - applications
 
   testnet-init:
     image: obada/ethermint
@@ -68,36 +84,19 @@ services:
     networks:
       - obadanet
 
-  blockexplorer:
-    image: obada/blockscout
-    container_name: blockexplorer
-    networks:
-      - frontend
-      - blockscout
-      - obadanet
-
-  blockexplorer-migrations:
-    image: obada/blockscout
+  explorer:
+    image: obada/explorer
+    container_name: explorer
     environment:
-      - POSTGRES_USER="postgress"
-      - POSTGRES_DATABASE=blockscout
-    command: "mix do ecto.create, ecto.migrate"
+      - APP_NODE_URL=http://localhost:8545
+    ports:
+      - 80:80
     networks:
-      - blockscout
-
-  postgres:
-    image: postgres:12.5
-    container_name: postgress
-    environment:
-      - POSTGRES_PASSWORD=obadarocks
-      - POSTGRES_USER=postgres
-      - POSTGRES_HOST_AUTH_METHOD=trust 
-    networks:
-      - blockscout
+      - applications
       
 networks:
   obadanet:
-  blockscout:
-  frontend:
+  applications:
+    name: applications
   
     
