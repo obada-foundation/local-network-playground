@@ -1,6 +1,25 @@
 version: "3.7"
 
 services:
+  contracts:
+    image: obada/contracts
+    container_name: contracts
+    volumes:
+      - ./.env:/contracts/.env
+    networks:
+      - applications
+
+  rdgo:
+    image: obada/rdgo
+    container_name: rdgo
+    restart: always
+    env_file:
+      - ./.env
+    ports:
+      - "8585:8585"
+    networks:
+      - applications
+
   ipfs:
     image: ipfs/go-ipfs:latest
     container_name: ipfs

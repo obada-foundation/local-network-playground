@@ -7,48 +7,36 @@ OBADA network simulation to run locally
 4. Nft creation
 5. Nft execution from rd project
 
-# Setup
+# Installation
 
-## Setup validation network
+For running this playground please use Ubuntu 20.04
 
-```
-docker-compose up -d testnet-init
-```
+## Install required packages
 
-## Run the network
-```sh
-docker-compose up -d
+```bash
+sudo apt install docker.io docker-compose make
 ```
 
-## Attach new node to the network
+## Clone the project
 
-Copy genesis from the master file
-
-```sh
-cp nodes/node0/ethermintd/config/genesis.json nodes/node/ethermintd/config
+```bash
+git clone git@github.com:obada-foundation/local-network-playground
+cd local-network-playground
 ```
 
-Copy peers from the masterfile
-
-```sh
-PEERS=$(cat nodes/node0/ethermintd/config/config.toml | grep 'persistent_peers =')
-sed -i '' "s/persistent_peers = \"\"/$PEERS/" ./nodes/node/ethermintd/config/config.toml
-```
-
-Restart node
-
-```sh
-docker restart node
+## Configure and run OBADA network
 
 ```
-
-## Deploy smart contract
-
-Deploy Remix, Truffe etc
-
-## Export keys
-
-```sh
-
-docker exec -it node0 sh -c ""
+make install
 ```
+
+## Network components
+
+| Component name        | Description                                                  | Browser access URL                      |
+| --------------------- | ------------------------------------------------------------ | --------------------------------------- |
+| Reference design (Go) | The application that inreracts with OBADA network and creates NFTs. | http://localhost:8585                   |
+| IPFS                  | Interplanetary filesystem node is used to store NFT metadata in a decentrilized way. |                                         |
+| Application Node      | Node that do not participate in validation but it used by applications such as "Reference design" and "Block explorer" | http://localhost:8545                   |
+| Block explorer        | UI tool that allows to search records in blockchain by block id, transaction and address. Shows blockchain updates in realtime. | http://localhost                        |
+| Validation node       | The core of the system. The network of validation nodes creates "OBADA Network" | Does not allow access from the browser. |
+
