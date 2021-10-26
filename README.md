@@ -20,7 +20,7 @@ sudo apt install docker.io docker-compose make
 ## Clone the project
 
 ```bash
-git clone git@github.com:obada-foundation/local-network-playground
+git clone -b develop git@github.com:obada-foundation/local-network-playground
 cd local-network-playground
 ```
 
