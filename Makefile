@@ -21,8 +21,8 @@ clone_contracts:
 	git clone git@github.com:obada-foundation/contracts
 
 initialize_network:
+	mkdir nodes
 	docker-compose up testnet-init
-	touch env
 	touch .env
 	docker-compose up -d contracts ipfs node tradeloop-node obs-node usody-node ascidi-node explorer
 	sleep 10
