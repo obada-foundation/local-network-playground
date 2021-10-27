@@ -41,7 +41,7 @@ services:
     restart: always
     volumes:
       - ./nodes/node/ethermintd:/home/ethermint/.ethermintd:Z
-    command: ethermintd start --trace --keyring-backend test
+    command: ethermintd start --keyring-backend test
     ports:
      - "26657:26657"
      - "8545:8545"
