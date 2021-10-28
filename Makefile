@@ -4,7 +4,7 @@ SHELL := /bin/bash
 build_contracts:
 	docker build -t obada/contracts -f docker/contracts/Dockerfile .
 
-install: initialize_network configure_application_node deploy_contracts run_application
+install: create_folders_and_files pull_containers initialize_network configure_application_node deploy_contracts run_application
 
 KEY=$$(docker exec -it obs-node sh -c "ethermintd keys unsafe-export-eth-key node1 --keyring-backend test" | cut -c1-64)
 deploy_contracts:
@@ -20,9 +20,14 @@ install_deps:
 clone_contracts:
 	git clone git@github.com:obada-foundation/contracts
 
-initialize_network:
+pull_containers:
+	docker-compose pull
+
+create_folders_and_files:
 	mkdir -p  nodes/node/ethermintd
 	touch .env
+
+initialize_network:
 	docker-compose up testnet-init
 	docker-compose up -d contracts ipfs node tradeloop-node obs-node usody-node ascidi-node explorer
 	sleep 10
