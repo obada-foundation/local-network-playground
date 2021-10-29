@@ -1,6 +1,10 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := run
 
+ifndef INITIALIZE_TIMEOUT
+	override INITIALIZE_TIMEOUT = 10
+endif
+
 build_contracts:
 	docker build -t obada/contracts -f docker/contracts/Dockerfile .
 
@@ -30,7 +34,7 @@ create_folders_and_files:
 initialize_network:
 	docker-compose up testnet-init
 	docker-compose up -d contracts ipfs node tradeloop-node obs-node usody-node ascidi-node explorer
-	sleep 10
+	sleep $(INITIALIZE_TIMEOUT)
 
 PEERS=$$(cat nodes/node0/ethermintd/config/config.toml | grep 'persistent_peers =')
 configure_application_node:

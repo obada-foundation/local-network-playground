@@ -9,7 +9,7 @@ OBADA network simulation to run locally
 
 # Installation
 
-For running this playground please use **Ubuntu 20.04**
+For running this playground please use **Ubuntu 20.04**. Please check [this video](https://drive.google.com/file/d/1SczfTTY3blGGh-48BafwRX1UqJS6G-1R/view?usp=sharing) if you need more installation details.
 
 ## Install required packages
 
@@ -45,4 +45,11 @@ make install
 | Validation node       | The core of the system. The network of validation nodes creates "OBADA Network" | Does not allow access from the browser.                      |
 
 ## Installation troubleshooting
+
+### Container is restarting, wait until the container is running
+This error can mean that you have a slow docker environment, you can increase **INITIALIZE_TIMEOUT** (default value is 10 seconds). After failed installation run:
+```bash
+sudo make clean
+INITIALIZE_TIMEOUT=15 make install
+```
 
