@@ -39,7 +39,7 @@ make install
 | Component name        | Description                                                  | Browser access URL                                           |
 | --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Reference design (Go) | The application that interacts with OBADA network and creates NFTs. | http://localhost:8585                                        |
-| IPFS                  | Interplanetary filesystem node is used to store NFT metadata in a decentralized way. | http://localhost:8084 (Example url: http://bafybeidl5jj24us4huf6wvyijbiwzjge3uwkgvtl7sbwoe64mz5dnam3sq.ipfs.localhost:8084/) |
+| IPFS                  | Interplanetary filesystem node is used to store NFT metadata in a decentralized way. | http://localhost:8084 ([Example url](http://bafybeidl5jj24us4huf6wvyijbiwzjge3uwkgvtl7sbwoe64mz5dnam3sq.ipfs.localhost:8084/)) |
 | Application Node      | Node that do not participate in validation but it used by applications such as "Reference design" and "Block explorer" | http://localhost:8545                                        |
 | Block explorer        | UI tool that allows to search records in blockchain by block id, transaction and address. Shows blockchain updates in realtime. | http://localhost                                             |
 | Validation node       | The core of the system. The network of validation nodes creates "OBADA Network" | Does not allow access from the browser.                      |
