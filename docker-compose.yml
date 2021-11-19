@@ -1,14 +1,6 @@
 version: "3.7"
 
 services:
-  contracts:
-    image: obada/contracts
-    container_name: contracts
-    volumes:
-      - ./.env:/contracts/.env
-    networks:
-      - applications
-
   rdgo:
     image: obada/rdgo
     container_name: rdgo
@@ -36,12 +28,12 @@ services:
       - applications
 
   node:
-    image: obada/ethermint
+    image: obada/cored
     container_name: node
     restart: always
     volumes:
-      - ./nodes/node/ethermintd:/home/ethermint/.ethermintd:Z
-    command: ethermintd start --keyring-backend test
+      - ./nodes/node/cored:/home/cored/.cored:Z
+    command: cored start
     ports:
      - "26657:26657"
      - "8545:8545"
@@ -52,66 +44,86 @@ services:
       - applications
 
   testnet-init:
-    image: obada/ethermint
+    image: obada/cored
     container_name: testnet-init
+    environment:
+      DAEMON_HOME: "/home/cored/nodes/"
     volumes:
-      - ./testnet-init.sh:/home/ethermint/testnet-init.sh
-      - ./nodes:/home/ethermint/nodes
+      - ./testnet-init.sh:/home/cored/testnet-init.sh
+      - ./nodes:/home/cored/nodes
     command: "./testnet-init.sh"
     
   tradeloop-node:
-    image: obada/ethermint
+    image: obada/cored
     container_name: tradeloop-node
+    restart: always
     environment:
-      - ID=0
+      - ID=tradeloop
     volumes:
-      - ./nodes/node0/ethermintd:/home/ethermint/.ethermintd:Z
-    command: ethermintd start --keyring-backend test
+      - ./nodes/tradeloop-node/cored:/home/cored/.core:Z
+    command: cored start
     networks:
       - obadanet
       
   obs-node:
-    image: obada/ethermint
+    image: obada/cored
     container_name: obs-node
+    restart: always
     environment:
-      - ID=1
+      - ID=obs
     volumes:
-      - ./nodes/node1/ethermintd:/home/ethermint/.ethermintd:Z
-    command: ethermintd start --trace --keyring-backend test
+      - ./nodes/obs-node/cored:/home/cored/.core:Z
+    command: cored start
     networks:
       - obadanet
 
   usody-node:
-    image: obada/ethermint
+    image: obada/cored
     container_name: usody-node
+    restart: always
     environment:
-      - ID=2
+      - ID=usody
     volumes:
-      - ./nodes/node2/ethermintd:/home/ethermint/.ethermintd:Z
-    command: ethermintd start --trace --keyring-backend test
+      - ./nodes/usody-node/cored:/home/cored/.core:Z
+    command: cored start
+    networks:
+      - obadanet
+
+  wpdi-node:
+    image: obada/cored
+    container_name: wpdi-node
+    restart: always
+    environment:
+      - ID=wpdi
+    volumes:
+      - ./nodes/wpdi-node/cored:/home/cored/.core:Z
+    command: cored start
+    networks:
+      - obadanet
+
+  reno-node:
+    image: obada/cored
+    container_name: reno-node
+    restart: always
+    environment:
+      - ID=reno
+    volumes:
+      - ./nodes/reno-node/cored:/home/cored/.core:Z
+    command: cored start
     networks:
       - obadanet
 
   ascidi-node:
-    image: obada/ethermint
+    image: obada/cored
     container_name: ascidi-node
+    restart: always
     environment:
-      - ID=3
+      - ID=ascidi
     volumes:
-      - ./nodes/node3/ethermintd:/home/ethermint/.ethermintd:Z
-    command: ethermintd start --trace --keyring-backend test
+      - ./nodes/ascidi-node/cored:/home/cored/.core:Z
+    command: cored start
     networks:
       - obadanet
-
-  explorer:
-    image: obada/explorer
-    container_name: explorer
-    environment:
-      - APP_NODE_URL=http://localhost:8545
-    ports:
-      - 80:80
-    networks:
-      - applications
       
 networks:
   obadanet:

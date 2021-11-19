@@ -1,7 +1,42 @@
 #!/bin/sh
 
-NODES_DIR=$HOME/nodes
+DAEMON=/home/cored/cored
+DENOM=obd
 
-if [ ! -d $NODES_DIR/node0 ]; then
-    ethermintd testnet --v 4 -o $NODES_DIR  --keyring-backend=test --coin-denom=aobd --ip-addresses tradeloop-node,obs-node,usody-node,ascidi-node
-fi
+$DAEMON init --chain-id $CHAINID $CHAINID --home $DAEMON_HOME
+
+VALIDATORS="tradeloop wpdi usody obs ascidi reno"
+
+# create keys
+for VALIDATOR in $VALIDATORS
+do
+  $DAEMON keys add $VALIDATOR --keyring-backend test --home $DAEMON_HOME
+done
+
+# create accounts
+for VALIDATOR in $VALIDATORS
+do
+  $DAEMON add-genesis-account $VALIDATOR --keyring-backend test 1000000000000$DENOM --home $DAEMON_HOME
+done
+
+# create validator with a self-delegation
+for VALIDATOR in $VALIDATORS
+do
+  $DAEMON gentx $VALIDATOR 90000000000$DENOM --chain-id $CHAINID  --keyring-backend test --home $DAEMON_HOME --node-id $VALIDATOR
+done
+
+# create the final genesis file:
+$DAEMON collect-gentxs --home $DAEMON_HOME
+
+sed -i 's/\"stake\"/\"obd\"/g' $DAEMON_HOME/config/genesis.json
+$DAEMON validate-genesis $DAEMON_HOME/config/genesis.json
+
+for VALIDATOR in $VALIDATORS
+do
+  NODE_CONFIG_PATH="$DAEMON_HOME/$VALIDATOR-node/cored/config"
+
+  mkdir -p $NODE_CONFIG_PATH
+  cp $DAEMON_HOME/config/genesis.json $NODE_CONFIG_PATH
+  cp $DAEMON_HOME/config/config.toml $NODE_CONFIG_PATH
+  chown -R 1000:1000 "$DAEMON_HOME/$VALIDATOR-node/cored"
+done
