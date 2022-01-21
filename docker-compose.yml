@@ -5,6 +5,12 @@ services:
     image: obada/trust-anchor:develop
     container_name: ta
     restart: always
+    environment:
+      - TA_URL=http://trust-anchor
+      - AUTH_PUBLIC_KEY=/home/ta/.ssh/ta_api.pub.pem
+      - AUTH_PRIVATE_KEY=/home/ta/.ssh/ta_api.pem
+    volumes:
+      - ./ta/keys:/home/ta/.ssh
     networks:
       - applications
       
@@ -42,7 +48,7 @@ services:
     container_name: node
     restart: always
     volumes:
-      - ./nodes/node/cored:/home/cored/.cored:Z
+      - ./nodes/node/cored:/home/cored/.core:Z
     command: cored start
     ports:
      - "26657:26657"
@@ -62,18 +68,6 @@ services:
       - ./testnet-init.sh:/home/cored/testnet-init.sh
       - ./nodes:/home/cored/nodes
     command: "./testnet-init.sh"
-    
-  tradeloop-node:
-    image: obada/cored
-    container_name: tradeloop-node
-    restart: always
-    environment:
-      - ID=tradeloop
-    volumes:
-      - ./nodes/tradeloop-node/cored:/home/cored/.core:Z
-    command: cored start
-    networks:
-      - obadanet
       
   obs-node:
     image: obada/cored
@@ -83,54 +77,6 @@ services:
       - ID=obs
     volumes:
       - ./nodes/obs-node/cored:/home/cored/.core:Z
-    command: cored start
-    networks:
-      - obadanet
-
-  usody-node:
-    image: obada/cored
-    container_name: usody-node
-    restart: always
-    environment:
-      - ID=usody
-    volumes:
-      - ./nodes/usody-node/cored:/home/cored/.core:Z
-    command: cored start
-    networks:
-      - obadanet
-
-  wpdi-node:
-    image: obada/cored
-    container_name: wpdi-node
-    restart: always
-    environment:
-      - ID=wpdi
-    volumes:
-      - ./nodes/wpdi-node/cored:/home/cored/.core:Z
-    command: cored start
-    networks:
-      - obadanet
-
-  reno-node:
-    image: obada/cored
-    container_name: reno-node
-    restart: always
-    environment:
-      - ID=reno
-    volumes:
-      - ./nodes/reno-node/cored:/home/cored/.core:Z
-    command: cored start
-    networks:
-      - obadanet
-
-  ascidi-node:
-    image: obada/cored
-    container_name: ascidi-node
-    restart: always
-    environment:
-      - ID=ascidi
-    volumes:
-      - ./nodes/ascidi-node/cored:/home/cored/.core:Z
     command: cored start
     networks:
       - obadanet

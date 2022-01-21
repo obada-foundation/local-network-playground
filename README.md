@@ -4,12 +4,10 @@ OBADA network simulation to run locally
 1. IPSF for metadata
 2. Fauset to obtain tokens
 3. OBD token name - aobd / atto obd 1 power 18. **OBT**
-4. Nft creation (Smart Contract)
+4. Nft creation
 5. Nft execution from reference design application
 
 # Installation
-
-For running this playground please use **Ubuntu 20.04**. Please check [this video](https://drive.google.com/file/d/1SczfTTY3blGGh-48BafwRX1UqJS6G-1R/view?usp=sharing) if you need more installation details.
 
 ## Install required packages
 

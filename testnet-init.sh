@@ -5,7 +5,7 @@ DENOM=obd
 
 $DAEMON init --chain-id $CHAINID $CHAINID --home $DAEMON_HOME
 
-VALIDATORS="tradeloop wpdi usody obs ascidi reno"
+VALIDATORS="obs"
 
 # create keys
 for VALIDATOR in $VALIDATORS
