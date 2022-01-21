@@ -1,20 +1,22 @@
 version: "3.7"
 
 services:
-  contracts:
-    image: obada/contracts
-    container_name: contracts
-    volumes:
-      - ./.env:/contracts/.env
+  trust-anchor:
+    image: obada/trust-anchor:develop
+    container_name: ta
+    restart: always
     networks:
       - applications
-
+      
   rdgo:
-    image: obada/rdgo
+    image: obada/rdgo:develop
     container_name: rdgo
     restart: always
-    env_file:
-      - ./.env
+    environment:
+      - RPC_HOST=http://localhost
+      - TA_TOKEN=sfsf
+      - TA_URL=http://trust-anchor
+      - IPFS_HOST=http://ipfs:5001
     ports:
       - "8585:8585"
     networks:
@@ -36,11 +38,11 @@ services:
       - applications
 
   node:
-    image: obada/ethermint
+    image: obada/fullcore:develop
     container_name: node
     restart: always
     volumes:
-      - ./nodes/node/ethermintd:/home/ethermint/.ethermintd:Z
+      - ./nodes/node/fullcored:/home/obada/.fullcored:Z
     command: ethermintd start --keyring-backend test
     ports:
      - "26657:26657"
@@ -52,66 +54,56 @@ services:
       - applications
 
   testnet-init:
-    image: obada/ethermint
+    image: obada/fullcore:develop
     container_name: testnet-init
     volumes:
-      - ./testnet-init.sh:/home/ethermint/testnet-init.sh
-      - ./nodes:/home/ethermint/nodes
+      - ./testnet-init.sh:/home/obada/testnet-init.sh
+      - ./nodes:/home/obada/nodes
     command: "./testnet-init.sh"
     
   tradeloop-node:
-    image: obada/ethermint
+    image: obada/fullcore:develop
     container_name: tradeloop-node
     environment:
       - ID=0
     volumes:
-      - ./nodes/node0/ethermintd:/home/ethermint/.ethermintd:Z
+      - ./nodes/node0/fullcored:/home/obada/.fullcored:Z
     command: ethermintd start --keyring-backend test
     networks:
       - obadanet
       
   obs-node:
-    image: obada/ethermint
+    image: obada/fullcore:develop
     container_name: obs-node
     environment:
       - ID=1
     volumes:
-      - ./nodes/node1/ethermintd:/home/ethermint/.ethermintd:Z
+      - ./nodes/node1/fullcored:/home/obada/.fullcored:Z
     command: ethermintd start --trace --keyring-backend test
     networks:
       - obadanet
 
   usody-node:
-    image: obada/ethermint
+    image: obada/fullcore:develop
     container_name: usody-node
     environment:
       - ID=2
     volumes:
-      - ./nodes/node2/ethermintd:/home/ethermint/.ethermintd:Z
+      - ./nodes/node2/fullcored:/home/obada/.fullcored:Z
     command: ethermintd start --trace --keyring-backend test
     networks:
       - obadanet
 
   ascidi-node:
-    image: obada/ethermint
+    image: obada/fullcore:develop
     container_name: ascidi-node
     environment:
       - ID=3
     volumes:
-      - ./nodes/node3/ethermintd:/home/ethermint/.ethermintd:Z
+      - ./nodes/node3/fullcored:/home/obada/.fullcored:Z
     command: ethermintd start --trace --keyring-backend test
     networks:
       - obadanet
-
-  explorer:
-    image: obada/explorer
-    container_name: explorer
-    environment:
-      - APP_NODE_URL=http://localhost:8545
-    ports:
-      - 80:80
-    networks:
-      - applications
       
 networks:
   obadanet:
