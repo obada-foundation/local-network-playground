@@ -41,6 +41,7 @@ make install
 | Application Node      | Node that do not participate in validation but it used by applications such as "Reference design" and "Block explorer" | http://localhost:8545                                        |
 | Block explorer        | UI tool that allows to search records in blockchain by block id, transaction and address. Shows blockchain updates in realtime. | http://localhost                                             |
 | Validation node       | The core of the system. The network of validation nodes creates "OBADA Network" | Does not allow access from the browser.                      |
+| Trust Anchor          | TA  | http://localhost  |
 
 ## Installation troubleshooting
 
