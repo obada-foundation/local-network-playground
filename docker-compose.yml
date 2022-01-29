@@ -14,6 +14,65 @@ services:
     networks:
       - applications
 
+  hasura:
+    image: hasura/graphql-engine:v2.1.1
+    container_name: hasura
+    ports:
+      - "8080:8080"
+    depends_on:
+      - bdjuno_db
+    restart: always
+    volumes:
+      - ./hasura:/home/hasura/metadata
+    environment:
+      ## postgres database to store Hasura metadata
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://bdjuno:supersecure@bdjuno_db:5432/bdjuno_db
+      ## this env var can be used to add the above postgres database to Hasura as a data source. this can be removed/updated based on your needs
+      PG_DATABASE_URL: postgres://bdjuno:supersecure@bdjuno_db:5432/bdjuno_db
+      HASURA_GRAPHQL_DATABASE_URL: postgres://bdjuno:supersecure@bdjuno_db:5432/bdjuno_db
+      ## enable the console served by server
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+    networks:
+      - bdjuno
+      - applications
+
+  bdjuno-genesis:
+    image: obada/bdjuno
+    container_name: bdjuno-genesis
+    volumes:
+      - ./bdjuno:/root/.bdjuno
+      - ./nodes/node:/root/node
+    command: bdjuno parse-genesis
+    networks:
+      - bdjuno
+      - applications
+
+  bdjuno:
+    image: obada/bdjuno
+    container_name: bdjuno
+    volumes:
+      - ./bdjuno:/root/.bdjuno
+    command: bdjuno parse
+    networks:
+      - bdjuno
+      - applications
+
+  bdjuno_db:
+    image: postgres
+    container_name: bdjuno_db
+    environment:
+      - POSTGRES_USER=bdjuno
+      - POSTGRES_DB=bdjuno_db
+      - POSTGRES_PASSWORD=supersecure
+    volumes:
+      - ./bdjuno/data:/var/lib/postgresql/data
+      - ./bdjuno/schema:/root/schema
+    networks:
+      - bdjuno
+
   explorer:
     image: obada/explorer:playground
     container_name: explorer
@@ -134,3 +193,5 @@ networks:
         - subnet: 172.22.0.0/16
   applications:
     name: applications
+  bdjuno:
+    name: bdjuno
