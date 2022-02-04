@@ -26,6 +26,7 @@ configure_application_node:
 	docker-compose up -d node
 	docker exec -it node sh -c "sed -i 's/persistent_peers = \"\"/${PEERS}/' /home/obada/.cored/config/config.toml"
 	docker exec -it node sh -c "sed -i 's/laddr = \"tcp:\/\/127.0.0.1:26657\"/laddr = \"tcp:\/\/0.0.0.0:26657\"/' /home/obada/.cored/config/config.toml"
+	docker exec -it node sh -c "sed -i 's/laddr = \"tcp:\/\/127.0.0.1:26657\"/laddr = \"tcp:\/\/0.0.0.0:26657\"/' /home/obada/.cored/config/app.toml"
 	docker restart node
 
 PRIVATE_KEY=$$(docker exec -it obs-node sh -c "cored keys export obs --keyring-backend test --unarmored-hex --unsafe" | cut -c1-64)

@@ -81,6 +81,14 @@ services:
       - 3000:3000
     networks:
       - applications
+
+  rd:
+    image: obada/fullcore-ui:develop
+    container_name: rd
+    ports:
+      - "8090:8090"
+    networks:
+      - applications
       
   rdgo:
     image: obada/rdgo:develop
@@ -112,12 +120,12 @@ services:
       - applications
 
   node:
-    image: obada/cored:develop
+    image: obada/fullcore:develop
     container_name: node
     restart: always
     volumes:
       - ./nodes/node/cored:/home/obada/.cored:Z
-    command: cored start --home /home/obada/.cored
+    command: fullcored start --home /home/obada/.cored
     ports:
       - "26656-26657:26656-26657"
       - "1317:1317"
@@ -138,49 +146,49 @@ services:
     command: "./testnet-init.sh"
       
   tradeloop-node:
-    image: obada/cored:develop
+    image: obada/fullcore:develop
     container_name: tradeloop-node
     environment:
       - ID=0
     volumes:
       - ./nodes/node0/cored:/home/obada/.cored:Z
-    command: cored start --home /home/obada/.cored
+    command: fullcored start --trace --home /home/obada/.cored
     networks:
       obadanet:
         ipv4_address: 172.22.0.2
       
   obs-node:
-    image: obada/cored:develop
+    image: obada/fullcore:develop
     container_name: obs-node
     environment:
       - ID=1
     volumes:
       - ./nodes/node1/cored:/home/obada/.cored:Z
-    command: cored start --home /home/obada/.cored
+    command: fullcored start --home /home/obada/.cored
     networks:
       obadanet:
         ipv4_address: 172.22.0.3
 
   usody-node:
-    image: obada/cored:develop
+    image: obada/fullcore:develop
     container_name: usody-node
     environment:
       - ID=2
     volumes:
       - ./nodes/node2/cored:/home/obada/.cored:Z
-    command: cored start --home /home/obada/.cored
+    command: fullcored start --home /home/obada/.cored
     networks:
       obadanet:
         ipv4_address: 172.22.0.4
 
   ascidi-node:
-    image: obada/cored:develop
+    image: obada/fullcore:develop
     container_name: ascidi-node
     environment:
       - ID=3
     volumes:
       - ./nodes/node3/cored:/home/obada/.cored:Z
-    command: cored start --home /home/obada/.cored
+    command: fullcored start --home /home/obada/.cored
     networks:
       obadanet:
         ipv4_address: 172.22.0.5
