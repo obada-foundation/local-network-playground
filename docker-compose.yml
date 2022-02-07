@@ -35,6 +35,8 @@ services:
       ## enable debugging mode. It is recommended to disable this in production
       HASURA_GRAPHQL_DEV_MODE: "true"
       HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+    depends_on:
+      - bdjuno_db
     networks:
       - bdjuno
       - applications
@@ -53,9 +55,12 @@ services:
   bdjuno:
     image: obada/bdjuno
     container_name: bdjuno
+    restart: always
     volumes:
       - ./bdjuno:/root/.bdjuno
     command: bdjuno parse
+    depends_on:
+      - bdjuno_db
     networks:
       - bdjuno
       - applications
@@ -63,6 +68,7 @@ services:
   bdjuno_db:
     image: postgres
     container_name: bdjuno_db
+    restart: always
     environment:
       - POSTGRES_USER=bdjuno
       - POSTGRES_DB=bdjuno_db
@@ -70,6 +76,11 @@ services:
     volumes:
       - ./bdjuno/data:/var/lib/postgresql/data
       - ./bdjuno/schema:/root/schema
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
     networks:
       - bdjuno
 
@@ -85,6 +96,7 @@ services:
   rd:
     image: obada/fullcore-ui:develop
     container_name: rd
+    restart: always
     ports:
       - "8090:8090"
     networks:
@@ -136,7 +148,7 @@ services:
       - applications
 
   testnet-init:
-    image: obada/cored:develop
+    image: obada/fullcore:develop
     container_name: testnet-init
     environment:
       CHAINID: "obada-playgroud"
@@ -148,6 +160,7 @@ services:
   tradeloop-node:
     image: obada/fullcore:develop
     container_name: tradeloop-node
+    restart: always
     environment:
       - ID=0
     volumes:
@@ -160,6 +173,7 @@ services:
   obs-node:
     image: obada/fullcore:develop
     container_name: obs-node
+    restart: always
     environment:
       - ID=1
     volumes:
@@ -172,6 +186,7 @@ services:
   usody-node:
     image: obada/fullcore:develop
     container_name: usody-node
+    restart: always
     environment:
       - ID=2
     volumes:
@@ -184,6 +199,7 @@ services:
   ascidi-node:
     image: obada/fullcore:develop
     container_name: ascidi-node
+    restart: always
     environment:
       - ID=3
     volumes:
