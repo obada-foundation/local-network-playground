@@ -1,6 +1,5 @@
 nodes
-contracts
+bdjuno/data
 rd-go
-.idea
 ipfs
 .env

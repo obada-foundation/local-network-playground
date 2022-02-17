@@ -1,12 +1,118 @@
 version: "3.7"
 
 services:
+  trust-anchor:
+    image: obada/trust-anchor:develop
+    container_name: ta
+    restart: always
+    ports:
+      - 8071:80
+    environment:
+      - TA_URL=http://trust-anchor
+      - AUTH_PUBLIC_KEY=/home/ta/.ssh/ta_api.pub.pem
+      - AUTH_PRIVATE_KEY=/home/ta/.ssh/ta_api.pem
+    volumes:
+      - ./ta/keys:/home/ta/.ssh
+    networks:
+      - applications
+
+  hasura:
+    image: hasura/graphql-engine:v2.1.1
+    container_name: hasura
+    ports:
+      - "8080:8080"
+    depends_on:
+      - bdjuno_db
+    restart: always
+    volumes:
+      - ./hasura:/home/hasura/metadata
+    environment:
+      ## postgres database to store Hasura metadata
+      HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://bdjuno:supersecure@bdjuno_db:5432/bdjuno_db
+      ## this env var can be used to add the above postgres database to Hasura as a data source. this can be removed/updated based on your needs
+      PG_DATABASE_URL: postgres://bdjuno:supersecure@bdjuno_db:5432/bdjuno_db
+      HASURA_GRAPHQL_DATABASE_URL: postgres://bdjuno:supersecure@bdjuno_db:5432/bdjuno_db
+      ## enable the console served by server
+      HASURA_GRAPHQL_ENABLE_CONSOLE: "true" # set to "false" to disable console
+      ## enable debugging mode. It is recommended to disable this in production
+      HASURA_GRAPHQL_DEV_MODE: "true"
+      HASURA_GRAPHQL_ENABLED_LOG_TYPES: startup, http-log, webhook-log, websocket-log, query-log
+    depends_on:
+      - bdjuno_db
+    networks:
+      - bdjuno
+      - applications
+
+  bdjuno-genesis:
+    image: obada/bdjuno
+    container_name: bdjuno-genesis
+    volumes:
+      - ./bdjuno:/root/.bdjuno
+      - ./nodes/node:/root/node
+    command: bdjuno parse-genesis
+    networks:
+      - bdjuno
+      - applications
+
+  bdjuno:
+    image: obada/bdjuno
+    container_name: bdjuno
+    restart: always
+    volumes:
+      - ./bdjuno:/root/.bdjuno
+    command: bdjuno parse
+    depends_on:
+      - bdjuno_db
+    networks:
+      - bdjuno
+      - applications
+
+  bdjuno_db:
+    image: postgres
+    container_name: bdjuno_db
+    restart: always
+    environment:
+      - POSTGRES_USER=bdjuno
+      - POSTGRES_DB=bdjuno_db
+      - POSTGRES_PASSWORD=supersecure
+    volumes:
+      - ./bdjuno/data:/var/lib/postgresql/data
+      - ./bdjuno/schema:/root/schema
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+    networks:
+      - bdjuno
+
+  explorer:
+    image: obada/explorer:playground
+    container_name: explorer
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - applications
+
+  rd:
+    image: obada/fullcore-ui:develop
+    container_name: rd
+    restart: always
+    ports:
+      - "8090:8090"
+    networks:
+      - applications
+      
   rdgo:
-    image: obada/rdgo
+    image: obada/rdgo:develop
     container_name: rdgo
     restart: always
-    env_file:
-      - ./.env
+    environment:
+      - RPC_HOST=http://localhost
+      - TA_TOKEN=sfsf
+      - TA_URL=http://trust-anchor
+      - IPFS_HOST=http://ipfs:5001
     ports:
       - "8585:8585"
     networks:
@@ -28,106 +134,90 @@ services:
       - applications
 
   node:
-    image: obada/cored
+    image: obada/fullcore:develop
     container_name: node
     restart: always
     volumes:
-      - ./nodes/node/cored:/home/cored/.cored:Z
-    command: cored start
+      - ./nodes/node/cored:/home/obada/.cored:Z
+    command: fullcored start --home /home/obada/.cored
     ports:
-     - "26657:26657"
-     - "8545:8545"
-     - "8546:8546"
-     - "8125:8125"
+      - "26656-26657:26656-26657"
+      - "1317:1317"
+      - "9090:9090"
+      - "2345:2345"
     networks:
       - obadanet
       - applications
 
   testnet-init:
-    image: obada/cored
+    image: obada/fullcore:develop
     container_name: testnet-init
     environment:
-      DAEMON_HOME: "/home/cored/nodes/"
+      CHAINID: "obada-playgroud"
     volumes:
-      - ./testnet-init.sh:/home/cored/testnet-init.sh
-      - ./nodes:/home/cored/nodes
+      - ./testnet-init.sh:/home/obada/testnet-init.sh
+      - ./nodes:/home/obada/nodes
     command: "./testnet-init.sh"
-    
+      
   tradeloop-node:
-    image: obada/cored
+    image: obada/fullcore:develop
     container_name: tradeloop-node
     restart: always
     environment:
-      - ID=tradeloop
+      - ID=0
     volumes:
-      - ./nodes/tradeloop-node/cored:/home/cored/.core:Z
-    command: cored start
+      - ./nodes/node0/cored:/home/obada/.cored:Z
+    command: fullcored start --trace --home /home/obada/.cored
     networks:
-      - obadanet
+      obadanet:
+        ipv4_address: 172.22.0.2
       
   obs-node:
-    image: obada/cored
+    image: obada/fullcore:develop
     container_name: obs-node
     restart: always
     environment:
-      - ID=obs
+      - ID=1
     volumes:
-      - ./nodes/obs-node/cored:/home/cored/.core:Z
-    command: cored start
+      - ./nodes/node1/cored:/home/obada/.cored:Z
+    command: fullcored start --home /home/obada/.cored
     networks:
-      - obadanet
+      obadanet:
+        ipv4_address: 172.22.0.3
 
   usody-node:
-    image: obada/cored
+    image: obada/fullcore:develop
     container_name: usody-node
     restart: always
     environment:
-      - ID=usody
+      - ID=2
     volumes:
-      - ./nodes/usody-node/cored:/home/cored/.core:Z
-    command: cored start
+      - ./nodes/node2/cored:/home/obada/.cored:Z
+    command: fullcored start --home /home/obada/.cored
     networks:
-      - obadanet
-
-  wpdi-node:
-    image: obada/cored
-    container_name: wpdi-node
-    restart: always
-    environment:
-      - ID=wpdi
-    volumes:
-      - ./nodes/wpdi-node/cored:/home/cored/.core:Z
-    command: cored start
-    networks:
-      - obadanet
-
-  reno-node:
-    image: obada/cored
-    container_name: reno-node
-    restart: always
-    environment:
-      - ID=reno
-    volumes:
-      - ./nodes/reno-node/cored:/home/cored/.core:Z
-    command: cored start
-    networks:
-      - obadanet
+      obadanet:
+        ipv4_address: 172.22.0.4
 
   ascidi-node:
-    image: obada/cored
+    image: obada/fullcore:develop
     container_name: ascidi-node
     restart: always
     environment:
-      - ID=ascidi
+      - ID=3
     volumes:
-      - ./nodes/ascidi-node/cored:/home/cored/.core:Z
-    command: cored start
+      - ./nodes/node3/cored:/home/obada/.cored:Z
+    command: fullcored start --home /home/obada/.cored
     networks:
-      - obadanet
+      obadanet:
+        ipv4_address: 172.22.0.5
       
 networks:
   obadanet:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.22.0.0/16
   applications:
     name: applications
-  
-    
+  bdjuno:
+    name: bdjuno
