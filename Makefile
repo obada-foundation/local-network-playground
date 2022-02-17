@@ -47,7 +47,7 @@ explorer/database/run:
 	docker-compose up -d --force-recreate bdjuno_db
 
 explorer/database/migrate:
-	docker exec -t bdjuno_db sh -c "while ! pg_isready; do sleep 10; done && psql -Ubdjuno -hlocalhost -dbdjuno_db < /root/schema/schema.sql"
+	docker exec -t bdjuno_db sh -c "while ! pg_isready; do sleep 15; done && psql -Ubdjuno -hlocalhost -dbdjuno_db < /root/schema/schema.sql"
 
 explorer/bdjuno/genesis:
 	docker-compose up bdjuno-genesis

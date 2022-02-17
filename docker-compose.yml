@@ -5,6 +5,8 @@ services:
     image: obada/trust-anchor:develop
     container_name: ta
     restart: always
+    ports:
+      - 8071:80
     environment:
       - TA_URL=http://trust-anchor
       - AUTH_PUBLIC_KEY=/home/ta/.ssh/ta_api.pub.pem
