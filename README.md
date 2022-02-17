@@ -9,6 +9,8 @@ OBADA network simulation to run locally
 
 # Installation
 
+For running this playground please use **Ubuntu 20.04**. Please check [this video](https://drive.google.com/file/d/1SczfTTY3blGGh-48BafwRX1UqJS6G-1R/view?usp=sharing) if you need more installation details.
+
 ## Install required packages
 
 ```bash
