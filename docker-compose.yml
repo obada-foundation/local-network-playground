@@ -103,20 +103,6 @@ services:
       - "8090:8090"
     networks:
       - applications
-      
-  rdgo:
-    image: obada/rdgo:develop
-    container_name: rdgo
-    restart: always
-    environment:
-      - RPC_HOST=http://localhost
-      - TA_TOKEN=sfsf
-      - TA_URL=http://trust-anchor
-      - IPFS_HOST=http://ipfs:5001
-    ports:
-      - "8585:8585"
-    networks:
-      - applications
 
   ipfs:
     image: ipfs/go-ipfs:latest
@@ -129,7 +115,7 @@ services:
       - "4002:4001"
       - "4003:4001/udp" 
       - "8084:8080"
-      - "5002:5001"
+      - "5001:5001"
     networks:
       - applications
 
