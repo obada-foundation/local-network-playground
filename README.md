@@ -14,12 +14,14 @@ For running this playground please use **Ubuntu 20.04**. Please check [this vide
 ## Install required packages
 
 ```bash
-sudo apt install docker.io docker-compose make
+sudo apt install docker.io docker-compose make -y
 ```
 
-## Configure SSH key for cloning project from GitHub
+## Add user to docker group
 
-Check [this](https://www.inmotionhosting.com/support/server/ssh/how-to-add-ssh-keys-to-your-github-account/) tutorial.
+```bash
+sudo usermod -aG docker $USER
+```
 
 ## Clone the project
 

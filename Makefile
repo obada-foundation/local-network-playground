@@ -39,15 +39,14 @@ configure_application_node:
 
 	docker restart node
 
-PRIVATE_KEY=$$(docker exec -it obs-node sh -c "cored keys export obs --keyring-backend test --unarmored-hex --unsafe" | cut -c1-64)
 run_application:
-	docker-compose --env-file .env up -d --force-recreate rdgo trust-anchor rd
+	docker-compose --env-file .env up -d --force-recreate trust-anchor rd
 
 explorer/database/run:
 	docker-compose up -d --force-recreate bdjuno_db
 
 explorer/database/migrate:
-	docker exec -t bdjuno_db sh -c "while ! pg_isready; do sleep 15; done && psql -Ubdjuno -hlocalhost -dbdjuno_db < /root/schema/schema.sql"
+	docker exec -t bdjuno_db sh -c "while ! pg_isready; do sleep 20; done && psql -Ubdjuno -hlocalhost -dbdjuno_db < /root/schema/schema.sql"
 
 explorer/bdjuno/genesis:
 	docker-compose up bdjuno-genesis

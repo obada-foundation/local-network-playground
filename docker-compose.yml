@@ -100,7 +100,7 @@ services:
     container_name: rd
     restart: always
     ports:
-      - "8090:8090"
+      - "8090:80"
     networks:
       - applications
 
