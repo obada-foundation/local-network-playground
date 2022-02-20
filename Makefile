@@ -5,7 +5,7 @@ ifndef INITIALIZE_TIMEOUT
 	override INITIALIZE_TIMEOUT = 10
 endif
 
-install: create_folders_and_files pull_containers initialize_network configure_application_node run_application explorer/run explorer/database/migrate explorer/bdjuno/genesis  explorer/bdjuno/run explorer/hasura/run explorer/hasura/cli
+install: create_folders_and_files pull_containers initialize_network configure_application_node run_application explorer/run explorer/database/migrate explorer/bdjuno/genesis  explorer/bdjuno/run explorer/hasura/run explorer/hasura/cli ipfs/cors wallet/print-seed
 
 pull_containers:
 	#docker-compose pull
@@ -63,6 +63,15 @@ explorer/hasura/run:
 
 explorer/run: explorer/database/run
 	docker-compose up -d explorer
+
+wallet/print-seed:
+	cat nodes/node0/cored/key_seed.json
+
+ipfs/cors:
+	docker exec -t ipfs ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["*"]'
+	docker exec -t ipfs ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '["GET","POST"]'
+	docker exec -t ipfs ipfs config --json API.HTTPHeaders.Access-Control-Allow-Headers '["X-Requested-With"]'
+	docker restart ipfs
 
 run:
 	docker-compose up -d
