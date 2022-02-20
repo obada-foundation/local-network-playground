@@ -26,7 +26,7 @@ sudo usermod -aG docker $USER
 ## Clone the project
 
 ```bash
-git clone -b develop git@github.com:obada-foundation/local-network-playground
+git clone -b develop https://github.com/obada-foundation/local-network-playground
 cd local-network-playground
 ```
 
