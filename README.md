@@ -9,7 +9,7 @@ OBADA network simulation to run locally
 
 # Installation
 
-For running this playground please use **Ubuntu 20.04**. Please check [this video](https://drive.google.com/file/d/1SczfTTY3blGGh-48BafwRX1UqJS6G-1R/view?usp=sharing) if you need more installation details.
+For running this playground please use **Ubuntu 20.04**. Please check [this video](https://drive.google.com/file/d/1aEqd8FHd5Oi7ZkIK1gLEVxItGglWlsVE/view?usp=sharing) if you need more installation details.
 
 ## Install required packages
 
@@ -22,6 +22,8 @@ sudo apt install docker.io docker-compose make -y
 ```bash
 sudo usermod -aG docker $USER
 ```
+Restart your login section after this command (relogin or reboot). 
+
 
 ## Clone the project
 
