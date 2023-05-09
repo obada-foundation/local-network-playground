@@ -6,8 +6,6 @@ services:
     container_name: hasura
     ports:
       - "8080:8080"
-    depends_on:
-      - bdjuno_db
     restart: always
     volumes:
       - ./hasura:/home/hasura/metadata
@@ -26,7 +24,7 @@ services:
       - bdjuno_db
     networks:
       - bdjuno
-      - applications
+      - public
 
   bdjuno-genesis:
     image: obada/bdjuno
@@ -37,7 +35,6 @@ services:
     command: bdjuno parse-genesis
     networks:
       - bdjuno
-      - applications
 
   bdjuno:
     image: obada/bdjuno
@@ -50,7 +47,6 @@ services:
       - bdjuno_db
     networks:
       - bdjuno
-      - applications
 
   bdjuno_db:
     image: postgres
@@ -78,7 +74,7 @@ services:
     ports:
       - 3000:3000
     networks:
-      - applications
+      - public
 
   rd:
     image: obada/fullcore-ui:develop
@@ -87,7 +83,7 @@ services:
     ports:
       - "8090:80"
     networks:
-      - applications
+      - public
 
   ipfs:
     image: ipfs/go-ipfs:latest
@@ -102,7 +98,7 @@ services:
       - "8084:8080"
       - "5001:5001"
     networks:
-      - applications
+      - public
 
   faucet:
     image: obada/fullcore:develop
@@ -177,7 +173,5 @@ networks:
   node1:
   node2:
   faucet:
-  applications:
-    name: applications
   bdjuno:
     name: bdjuno

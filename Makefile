@@ -11,42 +11,18 @@ ifndef INITIALIZE_TIMEOUT
 	override INITIALIZE_TIMEOUT = 10
 endif
 
-install: create_folders_and_files pull_containers initialize_network configure_application_node run_application explorer/run explorer/database/migrate explorer/bdjuno/genesis  explorer/bdjuno/run explorer/hasura/run explorer/hasura/cli ipfs/cors wallet/print-seed
-
-pull_containers:
-	#docker-compose pull
+install:
+	cp -R nodes-backup nodes
+	docker-compose up -d sentry-node2 sentry-node1 val-node2 val-node1 node faucet
 
 create_folders_and_files:
 	mkdir -p  nodes/node/cored
 	touch .env
 
-initialize_network:
-	docker-compose up testnet-init
-	docker-compose up -d ipfs tradeloop-node obs-node usody-node ascidi-node
-	sleep $(INITIALIZE_TIMEOUT)
-
-PEERS=$$(cat nodes/node0/cored/config/config.toml | grep 'persistent_peers =')
-configure_application_node:
-	mkdir -p nodes/node/cored/config
-	cp nodes/node0/cored/config/genesis.json nodes/node/cored/config
-	docker-compose up -d node
-	docker exec -it node sh -c "sed -i 's/persistent_peers = \"\"/${PEERS}/' /home/obada/.cored/config/config.toml"
-
-	# Network interface mapping 
-	docker exec -it node sh -c "sed -i 's/laddr = \"tcp:\/\/127.0.0.1:26657\"/laddr = \"tcp:\/\/0.0.0.0:26657\"/' /home/obada/.cored/config/config.toml"
-	docker exec -it node sh -c "sed -i 's/laddr = \"tcp:\/\/127.0.0.1:26657\"/laddr = \"tcp:\/\/0.0.0.0:26657\"/' /home/obada/.cored/config/app.toml"
-
-	# CORS (only for playground)
-	docker exec -it node sh -c "sed -i 's/cors_allowed_origins = \[\]/cors_allowed_origins = \[\"\*\"\]/' /home/obada/.cored/config/config.toml"
-	docker exec -it node sh -c "sed -i '125s/enabled-unsafe-cors = false/enabled-unsafe-cors = true/' /home/obada/.cored/config/app.toml"
-
-	#Enables application node REST API on port 1317
-	docker exec -it node sh -c "sed -i '104s/enable = false/enable = true/' /home/obada/.cored/config/app.toml"
-
-	docker restart node
-
 run_application:
-	docker-compose --env-file .env up -d --force-recreate trust-anchor rd
+	docker-compose --env-file .env up -d --force-recreate rd
+
+explorer: explorer/run explorer/database/migrate explorer/bdjuno/genesis  explorer/bdjuno/run explorer/hasura/run explorer/hasura/cli
 
 explorer/database/run:
 	docker-compose up -d --force-recreate bdjuno_db
@@ -70,9 +46,6 @@ explorer/hasura/run:
 explorer/run: explorer/database/run
 	docker-compose up -d explorer
 
-wallet/print-seed:
-	cat nodes/node0/cored/key_seed.json
-
 ipfs/cors:
 	docker exec -t ipfs ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["*"]'
 	docker exec -t ipfs ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '["GET","POST"]'
@@ -89,12 +62,7 @@ clean:
 	rm -rf bdjuno/data
 	docker system prune -f
 
-
-docker/build:
-	docker build -t obada/node-sim:$(NODE_VERSION) --build-arg NODE_VERSION=$(NODE_VERSION) -f Dockerfile .
-
-
-init: init/dirs init/nodes init/genesis init/val-keys init/balances
+init: init/dirs init/nodes init/genesis init/keys init/balances
 
 init/dirs:
 	echo -e $(NODES) | xargs -I {}\
@@ -120,7 +88,7 @@ init/genesis:
 		obada/fullcore:develop \
 		sed -Ei 's/([0-9]+)stake/\1rohi/g' /home/obada/.fullcore/config/app.toml
 
-init/val-keys:
+init/keys:
 	echo -e $(NODES) | grep val | xargs -I {}\
 		docker run --rm -t \
 		-v $$(pwd)/nodes/{}:/home/obada/.fullcore \
@@ -128,13 +96,13 @@ init/val-keys:
 		fullcored keys --keyring-backend test --keyring-dir /home/obada/.fullcore/keys add {}
 
 init/balances:
-	echo -e $(VALIDATOR_NODES) | xargs -I {}\
+	echo -e $(NODES_WITH_BALANCE) | xargs -I {}\
 		docker run --rm -t \
 		-v $$(pwd)/nodes/{}:/home/obada/.fullcore \
 		obada/fullcore:develop \
 		sh -c "fullcored keys --keyring-backend test --keyring-dir ~/.fullcore/keys show "{}" --address > ~/.fullcore/keys/"{}
 
-	echo -e $(VALIDATOR_NODES) | xargs -I {}\
+	echo -e $(NODES_WITH_BALANCE) | xargs -I {}\
 		docker run --rm -t \
 		-v $$(pwd)/nodes/{}:/home/obada/.fullcore \
 		-e NODE_ADDRESS=cat nodes/{}/keys/address) \
