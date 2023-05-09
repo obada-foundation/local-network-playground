@@ -1,5 +1,11 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := run
+NODE_VERSION ?= develop
+
+GENESIS_VERSION ?= https://raw.githubusercontent.com/obada-foundation/testnet/main/testnets/testnet-2/genesis.json
+NODES := val-node1'\n'val-node2'\n'sentry-node1'\n'sentry-node2'\n'node'\n'faucet
+NODES_WITH_BALANCE := val-node1'\n'val-node2'\n'faucet
+
 
 ifndef INITIALIZE_TIMEOUT
 	override INITIALIZE_TIMEOUT = 10
@@ -82,3 +88,55 @@ clean:
 	rm -rf nodes
 	rm -rf bdjuno/data
 	docker system prune -f
+
+
+docker/build:
+	docker build -t obada/node-sim:$(NODE_VERSION) --build-arg NODE_VERSION=$(NODE_VERSION) -f Dockerfile .
+
+
+init: init/dirs init/nodes init/genesis init/val-keys init/balances
+
+init/dirs:
+	echo -e $(NODES) | xargs -I {}\
+		mkdir -p nodes/{}
+
+init/nodes:
+	echo -e $(NODES) | xargs -I {}\
+		docker run --rm -t \
+		-v $$(pwd)/nodes/{}:/home/obada/.fullcore \
+		obada/fullcore:develop \
+		fullcored init {} --chain-id obada-testnet
+
+init/genesis:
+	echo -e $(NODES) | xargs -I {}\
+		docker run --rm -t \
+		-v $$(pwd)/nodes/{}:/home/obada/.fullcore \
+		obada/fullcore:develop \
+		wget $(GENESIS_VERSION) -O /home/obada/.fullcore/config/genesis.json
+
+	echo -e $(NODES) | xargs -I {}\
+		docker run --rm -t \
+		-v $$(pwd)/nodes/{}:/home/obada/.fullcore \
+		obada/fullcore:develop \
+		sed -Ei 's/([0-9]+)stake/\1rohi/g' /home/obada/.fullcore/config/app.toml
+
+init/val-keys:
+	echo -e $(NODES) | grep val | xargs -I {}\
+		docker run --rm -t \
+		-v $$(pwd)/nodes/{}:/home/obada/.fullcore \
+		obada/fullcore:develop \
+		fullcored keys --keyring-backend test --keyring-dir /home/obada/.fullcore/keys add {}
+
+init/balances:
+	echo -e $(VALIDATOR_NODES) | xargs -I {}\
+		docker run --rm -t \
+		-v $$(pwd)/nodes/{}:/home/obada/.fullcore \
+		obada/fullcore:develop \
+		sh -c "fullcored keys --keyring-backend test --keyring-dir ~/.fullcore/keys show "{}" --address > ~/.fullcore/keys/"{}
+
+	echo -e $(VALIDATOR_NODES) | xargs -I {}\
+		docker run --rm -t \
+		-v $$(pwd)/nodes/{}:/home/obada/.fullcore \
+		-e NODE_ADDRESS=cat nodes/{}/keys/address) \
+		obada/fullcore:develop \
+		sh -c 'fullcored add-genesis-account $$NODE_ADDRESS 100000000000000000rohi'

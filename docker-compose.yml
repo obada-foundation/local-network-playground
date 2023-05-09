@@ -1,21 +1,6 @@
 version: "3.7"
 
 services:
-  trust-anchor:
-    image: obada/trust-anchor:develop
-    container_name: ta
-    restart: always
-    ports:
-      - 8071:80
-    environment:
-      - TA_URL=http://trust-anchor
-      - AUTH_PUBLIC_KEY=/home/ta/.ssh/ta_api.pub.pem
-      - AUTH_PRIVATE_KEY=/home/ta/.ssh/ta_api.pem
-    volumes:
-      - ./ta/keys:/home/ta/.ssh
-    networks:
-      - applications
-
   hasura:
     image: hasura/graphql-engine:v2.1.1
     container_name: hasura
@@ -119,90 +104,79 @@ services:
     networks:
       - applications
 
+  faucet:
+    image: obada/fullcore:develop
+    container_name: faucet
+    restart: always
+    volumes:
+      - ./nodes/faucet:/home/obada/.fullcore:Z
+    command: fullcored start
+    networks:
+      - faucet
+      - public
+
   node:
     image: obada/fullcore:develop
     container_name: node
     restart: always
     volumes:
-      - ./nodes/node/cored:/home/obada/.cored:Z
-    command: fullcored start --home /home/obada/.cored
+      - ./nodes/node:/home/obada/.fullcore:Z
+    command: fullcored start
     ports:
       - "26656-26657:26656-26657"
       - "1317:1317"
       - "9090:9090"
       - "2345:2345"
     networks:
-      - obadanet
-      - applications
+      - public
 
-  testnet-init:
+  val-node1:
     image: obada/fullcore:develop
-    container_name: testnet-init
-    environment:
-      CHAINID: "obada-playgroud"
+    container_name: val-node1
+    restart: always
     volumes:
-      - ./testnet-init.sh:/home/obada/testnet-init.sh
-      - ./nodes:/home/obada/nodes
-    command: "./testnet-init.sh"
+      - ./nodes/val-node1:/home/obada/.fullcore:Z
+    command: fullcored start --trace
+    networks:
+      - node1
+
+  sentry-node1:
+    image: obada/fullcore:develop
+    container_name: sentry-node1
+    restart: always
+    volumes:
+      - ./nodes/sentry-node1:/home/obada/.fullcore:Z
+    command: fullcored start --trace
+    networks:
+      - node1
+      - public
       
-  tradeloop-node:
+  val-node2:
     image: obada/fullcore:develop
-    container_name: tradeloop-node
+    container_name: val-node2
     restart: always
-    environment:
-      - ID=0
     volumes:
-      - ./nodes/node0/cored:/home/obada/.cored:Z
-    command: fullcored start --trace --home /home/obada/.cored
+      - ./nodes/val-node2:/home/obada/.fullcore:Z
+    command: fullcored start --trace
     networks:
-      obadanet:
-        ipv4_address: 172.22.0.2
-      
-  obs-node:
-    image: obada/fullcore:develop
-    container_name: obs-node
-    restart: always
-    environment:
-      - ID=1
-    volumes:
-      - ./nodes/node1/cored:/home/obada/.cored:Z
-    command: fullcored start --home /home/obada/.cored
-    networks:
-      obadanet:
-        ipv4_address: 172.22.0.3
+      - node2
 
-  usody-node:
+  sentry-node2:
     image: obada/fullcore:develop
-    container_name: usody-node
+    container_name: sentry-node2
     restart: always
-    environment:
-      - ID=2
     volumes:
-      - ./nodes/node2/cored:/home/obada/.cored:Z
-    command: fullcored start --home /home/obada/.cored
+      - ./nodes/sentry-node2:/home/obada/.fullcore:Z
+    command: fullcored start --trace
     networks:
-      obadanet:
-        ipv4_address: 172.22.0.4
-
-  ascidi-node:
-    image: obada/fullcore:develop
-    container_name: ascidi-node
-    restart: always
-    environment:
-      - ID=3
-    volumes:
-      - ./nodes/node3/cored:/home/obada/.cored:Z
-    command: fullcored start --home /home/obada/.cored
-    networks:
-      obadanet:
-        ipv4_address: 172.22.0.5
+      - node2
+      - public
       
 networks:
-  obadanet:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.22.0.0/16
+  public:
+  node1:
+  node2:
+  faucet:
   applications:
     name: applications
   bdjuno:
